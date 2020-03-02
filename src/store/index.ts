@@ -21,8 +21,6 @@ const store: StoreOptions<RootState> = {
       try {
         const dayItems = await dayItemsApi.getAll()
 
-        console.log('read day items', dayItems)
-
         commit('setDayItems', dayItems)
       } catch (err) {
         console.error('read day items error:', err)
