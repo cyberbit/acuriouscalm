@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Vuex, { StoreOptions } from 'vuex'
 
-import { DayItem } from '@/models'
 import { RootState } from '@/types'
 import dayItemsApi from '@/api/DayItemsApi'
 
@@ -9,11 +8,26 @@ Vue.use(Vuex)
 
 const store: StoreOptions<RootState> = {
   state: {
-    dayItems: []
+    dayItems: {
+      all: [],
+      selected: null
+    }
+  },
+  getters: {
+    isDayItemsLoaded: (state) => {
+      return state.dayItems.all.length > 0
+    },
+    findDayItemById: (state) => (id: string) => {
+      return state.dayItems.all.find(v => v.id === id)
+    }
   },
   mutations: {
-    setDayItems (store, dayItems) {
-      store.dayItems = dayItems
+    setDayItems (state, dayItems) {
+      state.dayItems.all = dayItems
+    },
+
+    selectDayItem (state, dayItem) {
+      state.dayItems.selected = dayItem
     }
   },
   actions: {

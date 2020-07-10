@@ -33,7 +33,11 @@ module.exports = {
       ignoreWhenNoAttributes: true,
       ignoreWhenEmpty: true,
       ignores: ['pre', 'textarea', ...INLINE_ELEMENTS, 'td']
-    }]
+    }],
+
+    // fix types being reported as unused
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': 'error'
   },
   parserOptions: {
     parser: '@typescript-eslint/parser'

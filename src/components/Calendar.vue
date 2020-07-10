@@ -5,12 +5,14 @@
         v-if="isLoading"
       >
         <v-col
-          v-for="n in 3"
+          v-for="n in 12"
           :key="n"
-          cols="3"
+          cols="6"
+          sm="3"
+          md="2"
         >
           <v-skeleton-loader
-            type="card"
+            type="image"
           />
         </v-col>
       </template>
@@ -18,12 +20,29 @@
         <v-col
           v-for="item in dayItems"
           :key="item.id"
-          cols="3"
+          cols="6"
+          sm="3"
+          md="2"
         >
-          <v-card>
-            <v-card-title>{{ item.title }}</v-card-title>
-            <v-card-subtitle>{{ item.description }}</v-card-subtitle>
-          </v-card>
+          <v-lazy
+            min-height="120"
+            transition="scale-transition"
+            :options="{ threshold: 0 }"
+          >
+            <v-card
+              :to="{ name: 'readDayItem', params: { id: item.id }}"
+              exact
+              hover
+            >
+              <v-img
+                :src="item.image"
+                :lazy-src="lazySrc"
+                aspect-ratio="1"
+              />
+              <!-- <v-card-title>{{ item.title }}</v-card-title>
+              <v-card-subtitle>{{ item.description }}</v-card-subtitle> -->
+            </v-card>
+          </v-lazy>
         </v-col>
       </template>
     </v-row>
@@ -32,13 +51,15 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
+import { lazySrc } from '@/assets/imageSources'
 
 @Component
 export default class Calendar extends Vue {
-  private isLoading: boolean = false
+  private isLoading: boolean = true
+  private lazySrc: string = lazySrc
 
   get dayItems () {
-    return this.$store.state.dayItems
+    return this.$store.state.dayItems.all
   }
 
   mounted () {
@@ -48,7 +69,9 @@ export default class Calendar extends Vue {
   async readDayItems () {
     this.isLoading = true
 
-    await this.$store.dispatch('readDayItems')
+    if (!this.dayItems.length) {
+      await this.$store.dispatch('readDayItems')
+    }
 
     this.isLoading = false
   }
