@@ -10,7 +10,9 @@ const store: StoreOptions<RootState> = {
   state: {
     dayItems: {
       all: [],
-      selected: null
+      previous: null,
+      current: null,
+      next: null
     }
   },
   getters: {
@@ -27,7 +29,13 @@ const store: StoreOptions<RootState> = {
     },
 
     selectDayItem (state, dayItem) {
-      state.dayItems.selected = dayItem
+      state.dayItems.current = dayItem
+
+      // TODO update to support custom playlist
+      const currentIdx = state.dayItems.all.findIndex(v => v.id === dayItem.id)
+
+      state.dayItems.previous = state.dayItems.all[currentIdx - 1] || null
+      state.dayItems.next = state.dayItems.all[currentIdx + 1] || null
     }
   },
   actions: {

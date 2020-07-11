@@ -25,35 +25,57 @@
                     :value="!hasPlayed || hover"
                   >
                     <v-btn
-                      v-if="!isPlaying"
-                      class="xx-large"
+                      class="xx-large mr-n2"
                       icon
-                      @click="onPlayClick"
+                      @click="onPreviousClick"
+                      :disabled="!previousDayItem"
                     >
                       <v-icon class="xx-large">
-                        mdi-play
+                        mdi-skip-previous
                       </v-icon>
                     </v-btn>
+                    <div class="progress-button-wrapper">
+                      <v-btn
+                        v-if="!isPlaying"
+                        class="xxx-large"
+                        icon
+                        @click="onPlayClick"
+                      >
+                        <v-icon class="xxx-large">
+                          mdi-play
+                        </v-icon>
+                      </v-btn>
+                      <v-btn
+                        v-else
+                        class="xxx-large"
+                        icon
+                        @click="onPauseClick"
+                      >
+                        <v-icon class="xxx-large">
+                          mdi-pause
+                        </v-icon>
+                      </v-btn>
+                      <v-fade-transition>
+                        <v-progress-circular
+                          v-if="hasPlayed"
+                          class="progress-circular-button"
+                          size="100"
+                          :rotate="isWaiting ? '0' : '270'"
+                          :value="seek"
+                          :indeterminate="isWaiting"
+                        />
+                      </v-fade-transition>
+                    </div>
                     <v-btn
-                      v-else
-                      class="xx-large"
+                      class="xx-large ml-n2"
                       icon
-                      @click="onPauseClick"
+                      @click="onNextClick"
+                      :disabled="!nextDayItem"
                     >
                       <v-icon class="xx-large">
-                        mdi-pause
+                        mdi-skip-next
                       </v-icon>
                     </v-btn>
-                    <v-fade-transition>
-                      <v-progress-circular
-                        v-if="hasPlayed"
-                        class="progress-circular-button"
-                        size="100"
-                        :rotate="isWaiting ? '0' : '270'"
-                        :value="seek"
-                        :indeterminate="isWaiting"
-                      />
-                    </v-fade-transition>
                   </v-overlay>
                 </v-fade-transition>
                 <v-card-text
@@ -83,6 +105,7 @@
 import { Component, Vue } from 'vue-property-decorator'
 import { DayItem, generateEmptyDayItem } from '../models'
 import { lazySrc } from '@/assets/imageSources'
+import { Route } from 'vue-router'
 
 @Component
 export default class ReadDayItem extends Vue {
@@ -95,13 +118,23 @@ export default class ReadDayItem extends Vue {
   private seek: Number = 0
 
   // state
-  get dayItems () {
+  get dayItems (): DayItem[] {
     return this.$store.state.dayItems.all
+  }
+
+  get previousDayItem (): DayItem | null {
+    return this.$store.state.dayItems.previous
+  }
+
+  get nextDayItem (): DayItem | null {
+    return this.$store.state.dayItems.next
   }
 
   // lifecycle
   mounted () {
-    this.readDayItem()
+    const { id } = this.$route.params
+
+    this.readDayItem(id)
   }
 
   beforeDestroy () {
@@ -110,6 +143,13 @@ export default class ReadDayItem extends Vue {
     audio.pause()
 
     this.detachAudioHandlers()
+  }
+
+  beforeRouteUpdate (to: Route, from: Route, next: Function) {
+    this.detachAudioHandlers()
+    this.readDayItem(to.params.id)
+
+    next()
   }
 
   // handlers
@@ -152,6 +192,22 @@ export default class ReadDayItem extends Vue {
     }
   }
 
+  onPreviousClick () {
+    if (this.previousDayItem) {
+      const { id } = this.previousDayItem
+
+      this.$router.push({ name: 'readDayItem', params: { id } })
+    }
+  }
+
+  onNextClick () {
+    if (this.nextDayItem) {
+      const { id } = this.nextDayItem
+
+      this.$router.push({ name: 'readDayItem', params: { id } })
+    }
+  }
+
   attachAudioHandlers () {
     const audio = this.getAudioRef()
 
@@ -175,9 +231,7 @@ export default class ReadDayItem extends Vue {
   }
 
   // helpers
-  async readDayItem () {
-    const { id } = this.$route.params
-
+  async readDayItem (id: string) {
     this.isLoading = true
 
     if (!this.dayItems.length) {
@@ -186,6 +240,7 @@ export default class ReadDayItem extends Vue {
 
     try {
       this.dayItem = this.$store.getters.findDayItemById(id)
+      this.$store.commit('selectDayItem', this.dayItem)
 
       this.$nextTick(function () {
         this.attachAudioHandlers()
@@ -194,6 +249,12 @@ export default class ReadDayItem extends Vue {
       // TODO message bus?
       console.error('Read Post Error:', e)
     }
+
+    // reset player
+    this.hasPlayed = false
+    this.isPlaying = false
+    this.isWaiting = true
+    this.seek = 0
 
     this.isLoading = false
   }
@@ -209,19 +270,37 @@ audio {
   width: 100%;
 }
 
-.v-btn.xx-large {
-  width: 100px;
-  height: 100px;
+.v-btn {
+  &.xx-large {
+    width: 75px;
+    height: 75px;
+  }
+
+  &.xxx-large {
+    width: 100px;
+    height: 100px;
+  }
 }
 
-.v-icon.xx-large {
-  font-size: 80px;
+.v-icon {
+  &.xx-large {
+    font-size: 55px;
+  }
+
+  &.xxx-large {
+    font-size: 80px;
+  }
 }
 
-.v-progress-circular.progress-circular-button {
-  position: absolute;
-  top: 0;
-  left: 0;
-  pointer-events: none;
+.progress-button-wrapper {
+  position: relative;
+  display: inline-block;
+
+  .v-progress-circular {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+  }
 }
 </style>
