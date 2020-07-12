@@ -111,10 +111,10 @@ import { Route } from 'vue-router'
 export default class ReadDayItem extends Vue {
   private lazySrc: string = lazySrc
   private dayItem: DayItem = generateEmptyDayItem()
-  private isLoading: Boolean = false
-  private hasPlayed: Boolean = false
-  private isPlaying: Boolean = false
-  private isWaiting: Boolean = true
+  private isLoading: boolean = false
+  private hasPlayed: boolean = false
+  private isPlaying: boolean = false
+  private isWaiting: boolean = true
   private seek: Number = 0
 
   // state
@@ -146,8 +146,10 @@ export default class ReadDayItem extends Vue {
   }
 
   beforeRouteUpdate (to: Route, from: Route, next: Function) {
+    const play = this.isPlaying || false
+
     this.detachAudioHandlers()
-    this.readDayItem(to.params.id)
+    this.readDayItem(to.params.id, play)
 
     next()
   }
@@ -179,9 +181,18 @@ export default class ReadDayItem extends Vue {
   }
 
   onEnded () {
-    this.isPlaying = false
-    this.hasPlayed = false
-    this.seek = 0
+    const { autoplay } = this.$store.state.transport
+
+    if (autoplay) {
+      // mark state so that player will start after skip
+      this.isPlaying = true
+
+      this.onNextClick()
+    } else {
+      this.isPlaying = false
+      this.hasPlayed = false
+      this.seek = 0
+    }
   }
 
   onTimeUpdate () {
@@ -231,7 +242,7 @@ export default class ReadDayItem extends Vue {
   }
 
   // helpers
-  async readDayItem (id: string) {
+  async readDayItem (id: string, play = false) {
     this.isLoading = true
 
     if (!this.dayItems.length) {
@@ -244,6 +255,10 @@ export default class ReadDayItem extends Vue {
 
       this.$nextTick(function () {
         this.attachAudioHandlers()
+
+        if (play) {
+          this.onPlayClick()
+        }
       })
     } catch (e) {
       // TODO message bus?

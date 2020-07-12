@@ -13,6 +13,11 @@ const store: StoreOptions<RootState> = {
       previous: null,
       current: null,
       next: null
+    },
+
+    // TODO store settings in local storage
+    transport: {
+      autoplay: true
     }
   },
   getters: {
@@ -36,6 +41,10 @@ const store: StoreOptions<RootState> = {
 
       state.dayItems.previous = state.dayItems.all[currentIdx - 1] || null
       state.dayItems.next = state.dayItems.all[currentIdx + 1] || null
+    },
+
+    setAutoPlay (state, autoplay) {
+      state.transport.autoplay = autoplay
     }
   },
   actions: {

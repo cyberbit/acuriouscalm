@@ -6,5 +6,8 @@ export interface RootState {
     previous: DayItem | null,
     current: DayItem | null,
     next: DayItem | null
+  },
+  transport: {
+    autoplay: boolean
   }
 }
