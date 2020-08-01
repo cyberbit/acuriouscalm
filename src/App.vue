@@ -5,44 +5,58 @@
       color="primary"
       dark
     >
-      <v-toolbar-title>A Curious Calm</v-toolbar-title>
-      <div class="d-flex align-center">
-        <!-- <v-img
-          alt="Vuetify Logo"
-          class="shrink mr-2"
-          contain
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-          transition="scale-transition"
-          width="40"
-        />
+      <template v-if="isPost">
+        <v-btn
+          :to="{ name: 'home' }"
+          exact
+          text
+        >
+          <v-icon left>
+            mdi-apps
+          </v-icon>
+          Back to Posts
+        </v-btn>
+        <v-spacer />
 
-        <v-img
-          alt="Vuetify Name"
-          class="shrink mt-1 hidden-sm-and-down"
-          contain
-          min-width="100"
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
-          width="100"
-        /> -->
-      </div>
+        <v-switch
+          v-model="autoplay"
+          label="Autoplay"
+          hide-details
+        />
+      </template>
+      <template v-else>
+        <v-toolbar-title>A Curious Calm</v-toolbar-title>
+      </template>
     </v-app-bar>
 
-    <v-content>
+    <v-main>
       <v-container>
         <router-view />
       </v-container>
-    </v-content>
+    </v-main>
   </v-app>
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { Component, Vue } from 'vue-property-decorator'
 
-export default Vue.extend({
-  name: 'App',
+@Component
+export default class App extends Vue {
+  get isPost () {
+    return this.$route.matched.some(({ name }) => name === 'readDayItem')
+  }
 
-  data: () => ({
+  get autoplay () {
+    return this.$store.state.transport.autoplay
+  }
+
+  set autoplay (autoplay) {
+    this.$store.commit('setAutoPlay', autoplay)
+  }
+
+  // lifecycle
+  mounted () {
     //
-  })
-})
+  }
+}
 </script>
