@@ -57,7 +57,6 @@
                       </v-btn>
                       <v-fade-transition>
                         <v-progress-circular
-                          v-if="hasPlayed"
                           class="progress-circular-button"
                           size="100"
                           :rotate="isWaiting ? '0' : '270'"
